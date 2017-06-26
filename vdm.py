@@ -1,59 +1,19 @@
 # -*- coding:Utf-8 -*-
+import urllib2 as get
 
-import urllib2
-from HTMLParser import HTMLParser
+vdm_start = 'class="fmllink">Aujourd'
+vdm_end = '</a></p><div class="date">'
 
-def lire():
-    fichier = open("vdm.txt", "r+")
-    vdm = fichier.readlines()
-    taille = len(vdm)
+def get_quote():
+        quote = get.urlopen('http://www.viedemerde.fr/aleatoire').read()
+        quote = [a.split(vdm_end)[:-1] for a in quote.split(vdm_start)[1:]]
+        for i, item in enumerate(quote):
+                item = [a.split('>')[1] if '>' in a else a for a in item[0].split('</a><a')]
+                quote[i] = 'Aujourd'+''.join(item)
+        return quote
 
-    try:
-        print "\n", vdm[taille-1]
-        size =  sum(len(mot) for mot in vdm) - len(vdm[taille-1])
-        fichier.truncate(size)
-
-    except:
-        data = urllib2.urlopen("http://www.viedemerde.fr/aleatoire")
-        htmlSource = data.read()
-        parser = MyHTMLParser()
-        parser.feed(htmlSource)
-        ecrire()
-        lire()
-
-    fichier.close()
-
-def ecrire():
-    fichier = open("vdm.txt", "a+")
-
-    i = 0
-    while i < len(vdm):
-        if "VDM" in vdm[i]: vdm[i] += '\n'
-        fichier.write(vdm[i])
-        i+=1
-
-    fichier.close()
-
-class MyHTMLParser(HTMLParser):
-    flag = False
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            for name, value in attrs:
-                if name == "class" and value == "fmllink":
-                    self.flag = True
-
-    def handle_endtag(self, tag):
-        if tag == "a":
-            self.flag = False
-
-    def handle_data(self, data):
-        if self.flag and data !=".":
-            vdm.append(data)
-
-vdm = []
-
-try:
-    lire()
-except:
-    ecrire()
+with open('vdm.txt', 'r') as f: vdm= f.read()
+vdm = vdm.split('\n') if vdm else get_quote()
+while not raw_input(''):
+        print '\n',vdm.pop(0),'\n'
+        if not vdm: vdm = get_quote()
