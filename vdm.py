@@ -1,19 +1,38 @@
 # -*- coding:Utf-8 -*-
 import urllib2 as get
+dir = 'the_path_of_the_life'
 
-vdm_start = 'class="fmllink">Aujourd'
-vdm_end = '</a></p><div class="date">'
+def get_data():
+        req = get.build_opener()
+        req.addheaders = [('User-Agent', 'Mozilla/5.0')]
+        data = req.open('http://www.viedemerde.fr/aleatoire').read()
+        return data
 
-def get_quote():
-        quote = get.urlopen('http://www.viedemerde.fr/aleatoire').read()
-        quote = [a.split(vdm_end)[:-1] for a in quote.split(vdm_start)[1:]]
+def get_quote(data): #parsing html
+        quote = data.split("Aujourd'hui, ")[1:10]
         for i, item in enumerate(quote):
-                item = [a.split('>')[1] if '>' in a else a for a in item[0].split('</a><a')]
-                quote[i] = 'Aujourd'+''.join(item)
+            item = item.split('VDM\n')[0]
+            quote[i] = "Aujourd'hui, "+''.join(item)+'VDM\n'
+            quote[i] = unicode(quote[i], 'Utf-8').encode('cp1252') #thanks Windows
         return quote
 
-with open('vdm.txt', 'r') as f: vdm= f.read()
-vdm = vdm.split('\n') if vdm else get_quote()
-while not raw_input(''):
-        print '\n',vdm.pop(0),'\n'
-        if not vdm: vdm = get_quote()
+def save_quote(quotes):
+    with open(dir+'vdm.txt', 'a+') as f:
+        for quote in quotes:
+            f.write(quote)
+
+def read_quote():
+    quotes = ''
+    with open(dir+'vdm.txt', 'r') as f:
+        quotes = f.readlines()
+        f.close()
+    with open(dir+'vdm.txt', "w"):pass #erase content file
+
+    print quotes[0]
+
+    if len(quotes) == 1: #last quote so we need to get more
+        save_quote(get_quote(get_data()))
+    else:
+        save_quote(quotes[1:])
+
+read_quote()
