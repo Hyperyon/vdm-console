@@ -9,7 +9,7 @@ def get_data():
         return data
 
 def get_quote(data): #parsing html
-        quote = data.split("Aujourd'hui, ")[1:10]
+        quote = data.split("Aujourd'hui, ")[1:]
         for i, item in enumerate(quote):
             item = item.split('VDM\n')[0]
             quote[i] = "Aujourd'hui, "+''.join(item)+'VDM\n'
